@@ -1,0 +1,124 @@
+.date-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  margin-bottom: 8px;
+}
+.date-strip button {
+  height: 54px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+}
+.date-strip button:last-child {
+  border-right: 0;
+}
+.date-strip span {
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.date-strip b {
+  font: 500 15px "Inter Tight";
+}
+.date-strip .active {
+  background: var(--reverse);
+  color: var(--reverse-text);
+  margin: 4px;
+  height: 46px;
+}
+.date-strip .active span {
+  color: #aaa;
+}
+.list-surface {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.filter-bar {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  gap: 18px;
+  height: 47px;
+  align-items: center;
+  scrollbar-width: none;
+}
+.filter-bar button {
+  background: none;
+  border: 0;
+  font: 500 9px "JetBrains Mono";
+  color: var(--muted);
+  height: 100%;
+  padding: 0;
+  position: relative;
+  cursor: pointer;
+}
+.filter-bar button.active {
+  color: var(--text);
+}
+.filter-bar button.active:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #d71920;
+}
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 0;
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.ticker div {
+  height: 1px;
+  background: var(--line);
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.ticker div:after {
+  content: "";
+  position: absolute;
+  width: 40%;
+  inset-block: 0;
+  background: var(--text);
+  animation: sheen 2s infinite;
+}
+.ticker b {
+  font-weight: 500;
+}
+.competition-head {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.competition-head div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.competition-head span {
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+  border-right: 1px solid var(--line);
+  padding-right: 8px;
+}
+.competition-head b {
+  font: 500 11px "Inter Tight";
+}
+.competition-head small {
+  font: 500 7px "JetBrains Mono";
+  color: #d71920;
+}

@@ -1,0 +1,15 @@
+# Default: normalize text line endings, auto-detect binary
+* text=auto
+
+# Binary assets — never normalize line endings
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.otf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.eot binary

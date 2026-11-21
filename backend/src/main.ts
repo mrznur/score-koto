@@ -1,0 +1,31 @@
+import 'reflect-metadata';
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.setGlobalPrefix('api/v1');
+
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+
+  app.enableCors({ origin: '*' });
+
+  const config = new DocumentBuilder()
+    .setTitle('Score Koto API')
+    .setDescription('Sports data API for Score Koto Android app')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`🚀 Score Koto API running at http://localhost:${port}/api/v1`);
+  console.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
+}
+
+bootstrap();

@@ -1,0 +1,215 @@
+.scoreboard {
+  margin: 0 -16px;
+  padding: 16px 16px 18px;
+  background: var(--surface);
+}
+.score-id {
+  display: flex;
+  justify-content: space-between;
+  font: 400 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.big-score {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  text-align: center;
+  align-items: center;
+  padding: 25px 0 20px;
+}
+.big-score > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.big-score > div b {
+  font: 500 9px "JetBrains Mono";
+}
+.big-score > div small {
+  font: 400 6px "JetBrains Mono";
+  color: var(--muted);
+}
+.big-score strong {
+  font: 400 62px/0.8 "Inter Tight";
+  letter-spacing: -6px;
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+}
+.big-score strong i {
+  font-style: normal;
+  color: #d71920;
+}
+.score-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font: 500 7px "JetBrains Mono";
+}
+.score-status i {
+  width: 6px;
+  height: 6px;
+  background: #d71920;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+.score-status span {
+  color: var(--muted);
+  padding-left: 7px;
+  border-left: 1px solid var(--line);
+}
+.tabs {
+  margin: 0 -16px;
+  padding: 0 16px;
+  height: 46px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-block: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--bg);
+}
+.tabs button {
+  border: 0;
+  background: none;
+  font: 500 8px "JetBrains Mono";
+  color: var(--muted);
+  position: relative;
+  cursor: pointer;
+}
+.tabs button.active {
+  color: var(--text);
+}
+.tabs button.active:after {
+  content: "";
+  position: absolute;
+  height: 2px;
+  background: #d71920;
+  inset: auto 10px -1px;
+}
+.momentum {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 12px;
+}
+.momentum-bars {
+  height: 85px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border-bottom: 1px solid var(--line);
+}
+.momentum-bars i {
+  flex: 1;
+  background: var(--text);
+  max-height: 50%;
+  align-self: flex-end;
+}
+.momentum-bars i.away {
+  background: #aaa;
+  align-self: flex-start;
+  transform: translateY(42px);
+}
+.momentum > div:last-child {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.stats-surface {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 0 12px;
+}
+.stat-bar {
+  border-bottom: 1px solid var(--line);
+  padding: 13px 0;
+}
+.stat-bar:last-child {
+  border: 0;
+}
+.stat-bar > div:first-child {
+  display: grid;
+  grid-template-columns: 35px 1fr 35px;
+  text-align: center;
+  font: 500 9px "JetBrains Mono";
+}
+.stat-bar span {
+  font-size: 7px;
+  color: var(--muted);
+}
+.bar {
+  height: 3px;
+  display: flex;
+  gap: 2px;
+  margin-top: 8px;
+}
+.bar i:first-child {
+  background: #d71920;
+  margin-left: auto;
+}
+.bar i:last-child {
+  background: #aaa;
+}
+.timeline {
+  border-left: 1px solid var(--line);
+  margin-left: 28px;
+}
+.timeline > div {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 28px 16px 1fr;
+  align-items: start;
+  transform: translateX(-28px);
+}
+.timeline time {
+  font: 500 8px "JetBrains Mono";
+  padding-top: 3px;
+}
+.timeline i {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--text);
+  background: var(--bg);
+  margin: 2px 0 0 9px;
+}
+.timeline i.goal {
+  background: #d71920;
+  border-color: #d71920;
+  transform: rotate(45deg);
+}
+.timeline i.away {
+  background: var(--text);
+  border-color: var(--text);
+}
+.timeline p {
+  margin: 0 0 0 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font: 400 9px "Inter Tight";
+}
+.timeline p b {
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.lineup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+}
+.lineup-grid div {
+  padding: 12px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  display: flex;
+  gap: 9px;
+}
+.lineup-grid span {
+  font: 500 8px "JetBrains Mono";
+  color: #d71920;
+}

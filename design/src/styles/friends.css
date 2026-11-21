@@ -1,0 +1,165 @@
+.watching-strip {
+  display: flex;
+  gap: 17px;
+  padding: 17px 3px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.online-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+  gap: 3px;
+}
+.online-person i {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--reverse);
+  color: var(--reverse-text);
+  display: grid;
+  place-items: center;
+  font: 500 9px "JetBrains Mono";
+  font-style: normal;
+  position: relative;
+}
+.online-person i:after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border: 2px solid var(--bg);
+  border-radius: 50%;
+  background: #d71920;
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+}
+.online-person b {
+  font-size: 9px;
+}
+.online-person small {
+  font: 400 6px "JetBrains Mono";
+  color: var(--muted);
+}
+.online-person.offline {
+  opacity: 0.45;
+}
+.room-card {
+  width: 100%;
+  border: 0;
+  background: var(--reverse);
+  color: var(--reverse-text);
+  padding: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.room-card > div {
+  display: flex;
+  justify-content: space-between;
+  font: 400 7px "JetBrains Mono";
+  color: #aaa;
+}
+.room-card h3 {
+  margin: 22px 0;
+  display: flex;
+  justify-content: space-between;
+  font: 500 10px "JetBrains Mono";
+}
+.room-card h3 b {
+  font: 400 38px "Inter Tight";
+  letter-spacing: -3px;
+}
+.room-card p {
+  border-left: 2px solid #d71920;
+  padding-left: 10px;
+  font: 400 13px "Inter Tight";
+}
+.room-card > span {
+  border-top: 1px solid #333;
+  padding-top: 10px;
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  font: 500 7px "JetBrains Mono";
+}
+.prediction {
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  background: var(--surface);
+  padding: 12px;
+}
+.prediction:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.activity-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.activity-person > span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--soft);
+  display: grid;
+  place-items: center;
+  font: 500 7px "JetBrains Mono";
+}
+.activity-person p {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  flex: 1;
+  gap: 2px;
+}
+.activity-person b {
+  font-size: 10px;
+}
+.activity-person small {
+  font: 400 6px "JetBrains Mono";
+  color: var(--muted);
+}
+.activity-person em {
+  font: 500 7px "JetBrains Mono";
+  color: #d71920;
+  font-style: normal;
+}
+.prediction > p {
+  font: 400 11px/1.4 "Inter Tight";
+  margin: 13px 0;
+}
+.prediction-score {
+  background: var(--soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  font: 500 7px "JetBrains Mono";
+}
+.prediction-score b {
+  font: 500 15px "Inter Tight";
+}
+.invite-block {
+  width: 100%;
+  border: 1px dashed var(--muted);
+  background: transparent;
+  padding: 17px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 10px;
+  cursor: pointer;
+}
+.invite-block span,
+.invite-block i {
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+  font-style: normal;
+}
+.invite-block b {
+  font: 400 15px/1.3 "Inter Tight";
+}
+.invite-block i {
+  color: #d71920;
+}

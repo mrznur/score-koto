@@ -1,0 +1,40 @@
+# ── Android ──────────────────────────────────────────────────────────────────
+android/.gradle/
+android/local.properties
+android/app/build/
+android/build/
+android/**/*.jks
+android/**/google-services.json
+android/.idea/
+android/captures/
+android/.externalNativeBuild/
+android/.cxx/
+
+# ── Backend ───────────────────────────────────────────────────────────────────
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/prisma/migrations/**/migration_lock.toml
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+.env
+.env.*
+!.env.example
+
+# ── Design prototype (web) ────────────────────────────────────────────────────
+design/node_modules/
+design/.cache/
+design/dist/
+
+# ── Logs & OS ─────────────────────────────────────────────────────────────────
+*.log
+logs/
+.DS_Store
+Thumbs.db
+*.tmp
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/

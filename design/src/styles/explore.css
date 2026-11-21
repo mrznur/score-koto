@@ -1,0 +1,110 @@
+.search-box {
+  width: 100%;
+  height: 42px;
+  margin-top: 13px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 11px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.search-box span {
+  font: 400 8px "JetBrains Mono";
+  flex: 1;
+  text-align: left;
+}
+.search-box kbd {
+  font: 400 7px "JetBrains Mono";
+  border: 1px solid var(--line);
+  padding: 3px;
+}
+.explore-sports {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+}
+.explore-sports button {
+  height: 138px;
+  background: var(--surface);
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  cursor: pointer;
+}
+.explore-sports button:nth-child(even) {
+  border-right: 0;
+}
+.explore-sports button:nth-child(n + 3) {
+  border-bottom: 0;
+}
+.explore-sports span {
+  font: 500 7px "JetBrains Mono";
+  color: #d71920;
+}
+.explore-sports b {
+  font: 400 28px/0.85 "Inter Tight";
+  letter-spacing: -1px;
+  margin-top: auto;
+}
+.explore-sports small {
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+  margin-top: 10px;
+}
+.tool-links,
+.competition-grid,
+.favourite-teams,
+.settings-list {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.tool-links button,
+.competition-grid button,
+.favourite-teams button {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  display: grid;
+  grid-template-columns: 29px 1fr auto;
+  align-items: center;
+  text-align: left;
+  padding: 12px;
+  cursor: pointer;
+}
+.tool-links button:last-child,
+.competition-grid button:last-child,
+.favourite-teams button:last-child {
+  border-bottom: 0;
+}
+.tool-links span,
+.competition-grid span,
+.favourite-teams span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tool-links b,
+.competition-grid b,
+.favourite-teams b {
+  font: 500 11px "Inter Tight";
+}
+.tool-links small,
+.competition-grid small,
+.favourite-teams small {
+  font: 400 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.competition-grid button {
+  grid-template-columns: 46px 1fr auto;
+}
+.competition-grid strong {
+  font: 500 15px "Inter Tight";
+}

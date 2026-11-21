@@ -1,0 +1,95 @@
+.select-row {
+  width: 100%;
+  padding: 14px 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+.select-row span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.select-row small {
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.select-row b {
+  font: 500 14px "Inter Tight";
+}
+.table-key {
+  display: flex;
+  gap: 11px;
+  padding: 14px 0;
+  font: 500 6px "JetBrains Mono";
+  color: var(--muted);
+}
+.table-key span:before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  display: inline-block;
+  background: #111;
+  margin-right: 5px;
+}
+.table-key span:nth-child(2):before {
+  background: #aaa;
+}
+.table-key span:nth-child(3):before {
+  background: #d71920;
+}
+.league-table {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+}
+.tr {
+  display: grid;
+  grid-template-columns: 21px 1fr repeat(4, 22px) 29px 28px;
+  min-height: 47px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 0 6px;
+  font: 400 8px "JetBrains Mono";
+}
+.tr:last-child {
+  border: 0;
+}
+.tr b {
+  font: 500 9px "Inter Tight";
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tr b i {
+  color: #d71920;
+  font-style: normal;
+  font-size: 7px;
+  padding-left: 4px;
+}
+.tr strong {
+  text-align: right;
+  font-weight: 600;
+}
+.tr.th {
+  min-height: 30px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 6px;
+}
+.tr.favourite-team {
+  background: color-mix(in srgb, #d71920 6%, var(--surface));
+  border-left: 2px solid #d71920;
+}
+.updated,
+.version {
+  padding: 12px 0;
+  font: 400 6px "JetBrains Mono";
+  color: var(--muted);
+  text-align: right;
+}

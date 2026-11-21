@@ -1,0 +1,14 @@
+{
+  "title": "Score Kolo",
+  "description": "Follow live football, cricket, and more with scores, fixtures, stats, standings, AI match insights, and friends’ predictions and discussions in one place.",
+  "icons": {
+    "icon": "/favicon.png"
+  },
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

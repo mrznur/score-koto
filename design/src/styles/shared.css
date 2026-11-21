@@ -1,0 +1,89 @@
+.topbar {
+  min-height: 85px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 13px;
+}
+.topbar h1 {
+  font-size: 30px;
+  margin: 5px 0 0;
+}
+.topbar-copy {
+  display: flex;
+  align-items: center;
+}
+.topbar .back {
+  padding: 8px 13px 8px 0;
+  font: 400 24px "Inter Tight";
+}
+.live-count {
+  font: 500 8px "JetBrains Mono";
+  border: 1px solid #d71920;
+  color: #d71920;
+  padding: 6px 7px;
+}
+.icon-button {
+  background: transparent;
+  border: 0;
+  padding: 7px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.notification {
+  position: relative;
+}
+.notification > i {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d71920;
+  top: 5px;
+  right: 5px;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 11px;
+}
+.section-head > div {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.section-head span {
+  font: 500 8px "JetBrains Mono";
+  color: #d71920;
+}
+.section-head h2 {
+  margin: 0;
+  font: 500 18px "Inter Tight";
+  letter-spacing: -0.4px;
+}
+.section-head button,
+.text-button {
+  border: 0;
+  background: none;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font: 500 8px "JetBrains Mono";
+  cursor: pointer;
+  padding: 4px 0;
+}
+.icon {
+  display: block;
+}
+.day-marker {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0 0;
+  font: 500 8px "JetBrains Mono";
+}
+.day-marker span {
+  color: var(--muted);
+}

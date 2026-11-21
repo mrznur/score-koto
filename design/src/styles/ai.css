@@ -1,0 +1,157 @@
+.ai-notice {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.ai-notice span {
+  font: 500 7px "JetBrains Mono";
+  color: #d71920;
+}
+.ai-notice p {
+  margin: 0;
+  font: 400 7px/1.4 "JetBrains Mono";
+  color: var(--muted);
+}
+.chat {
+  padding-top: 20px;
+}
+.user-message {
+  margin-left: 42px;
+  border-left: 1px solid var(--line);
+  padding: 0 0 0 12px;
+}
+.user-message span,
+.ai-source,
+.ai-message > small {
+  font: 400 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.user-message p {
+  font: 400 15px "Inter Tight";
+  margin: 7px 0 25px;
+}
+.ai-message {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 13px;
+}
+.ai-source {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.ai-source b {
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+.ai-message > p {
+  font: 400 15px/1.45 "Inter Tight";
+  margin: 16px 0;
+}
+.analysis-data {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--line);
+}
+.analysis-data div {
+  padding: 8px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.analysis-data div:last-child {
+  border: 0;
+}
+.analysis-data span {
+  font: 400 6px "JetBrains Mono";
+  color: var(--muted);
+}
+.analysis-data b {
+  font: 500 16px "Inter Tight";
+}
+.analysis-data i {
+  font-size: 9px;
+  color: var(--muted);
+  font-style: normal;
+}
+.ai-message ol {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.ai-message li {
+  display: grid;
+  grid-template-columns: 25px 1fr;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.ai-message li > b {
+  font: 500 7px "JetBrains Mono";
+  color: #d71920;
+}
+.ai-message li p {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font: 400 10px/1.4 "Inter Tight";
+}
+.ai-message li strong {
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+.ai-message.compact {
+  margin-top: 12px;
+}
+.suggestions {
+  padding: 16px 0 78px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.suggestions > span {
+  width: 100%;
+  font: 500 7px "JetBrains Mono";
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.suggestions button {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 7px 9px;
+  font: 400 8px "JetBrains Mono";
+  cursor: pointer;
+}
+.chat-input {
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  right: 0;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  display: flex;
+  z-index: 3;
+}
+.chat-input input {
+  flex: 1;
+  border: 1px solid var(--line);
+  border-right: 0;
+  background: var(--surface);
+  color: var(--text);
+  padding: 11px;
+  font-size: 11px;
+  outline: none;
+}
+.chat-input button {
+  width: 43px;
+  border: 0;
+  background: var(--reverse);
+  color: var(--reverse-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}

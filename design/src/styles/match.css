@@ -1,0 +1,180 @@
+.hero-match {
+  border: 0;
+  background: var(--reverse);
+  color: var(--reverse-text);
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 13px 13px 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+}
+.hero-match:active,
+.ai-card:active,
+.match-row:active {
+  opacity: 0.8;
+}
+.hero-meta,
+.cricket-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 500 8px "JetBrains Mono";
+  color: #8d8d8d;
+}
+.live-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  font: 500 8px "JetBrains Mono";
+  white-space: nowrap;
+}
+.live-label i {
+  width: 6px;
+  height: 6px;
+  background: #d71920;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+.hero-score {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  align-items: center;
+  margin: 24px 0 16px;
+  text-align: center;
+}
+.hero-score > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font: 500 8px "JetBrains Mono";
+}
+.team-mark {
+  --team: #111;
+  width: 34px;
+  height: 34px;
+  border: 1px solid currentColor;
+  display: grid;
+  place-items: center;
+  position: relative;
+  font: 600 11px "Ndot-57";
+}
+.team-mark:after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  inset: 0 auto 0 0;
+  background: var(--team);
+}
+.team-mark.small {
+  width: 21px;
+  height: 21px;
+  font-size: 8px;
+}
+.team-mark.small:after {
+  width: 3px;
+}
+.hero-score strong {
+  font: 400 54px/0.8 "Inter Tight";
+  letter-spacing: -5px;
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+}
+.hero-score strong i {
+  font-style: normal;
+  color: #d71920;
+  transform: translateY(-3px);
+}
+.event-line {
+  border-top: 1px solid #333;
+  padding: 8px 30px 11px;
+  display: flex;
+  justify-content: space-between;
+  font: 400 8px "JetBrains Mono";
+  color: #aaa;
+}
+.open-match {
+  margin: 0 -13px;
+  padding: 11px 13px;
+  border-top: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 500 8px "JetBrains Mono";
+}
+.cricket-row {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 0;
+  padding: 11px 12px;
+  cursor: pointer;
+}
+.cricket-team {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  font: 500 10px "JetBrains Mono";
+}
+.cricket-team b {
+  font-size: 15px;
+}
+.cricket-team.dim {
+  color: var(--muted);
+}
+.cricket-row > p {
+  margin: 9px 0 0 31px;
+  font: 400 8px "JetBrains Mono";
+  color: var(--muted);
+}
+.match-row {
+  min-height: 75px;
+  display: grid;
+  grid-template-columns: 47px 1fr 22px 22px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 9px 7px;
+  cursor: pointer;
+}
+.match-row:last-child {
+  border-bottom: 0;
+}
+.match-time {
+  font: 500 9px "JetBrains Mono";
+}
+.match-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.match-teams > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.row-score {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font: 600 12px "JetBrains Mono";
+  align-items: center;
+}
+.fav {
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  color: var(--line);
+  cursor: pointer;
+}
+.fav.on {
+  color: #d71920;
+  fill: #d71920;
+}

@@ -1,0 +1,71 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import "tailwindcss";
+@import "./styles/shell.css";
+@import "./styles/shared.css";
+@import "./styles/home.css";
+@import "./styles/match.css";
+@import "./styles/matchdetail.css";
+@import "./styles/fixtures.css";
+@import "./styles/standings.css";
+@import "./styles/explore.css";
+@import "./styles/friends.css";
+@import "./styles/ai.css";
+@import "./styles/profile.css";
+
+@font-face {
+  font-family: "Ndot-55";
+  src: url("/fonts/Ndot-55.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Ndot-57";
+  src: url("/fonts/Ndot-57.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  font-family: "Figtree", sans-serif;
+  color: #040404;
+  background: #d71920;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+button,
+input {
+  font: inherit;
+}
+button {
+  color: inherit;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.32;
+  }
+}
+@keyframes sheen {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}

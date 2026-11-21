@@ -1,0 +1,125 @@
+.profile-card {
+  display: flex;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.profile-avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: var(--reverse);
+  color: var(--reverse-text);
+  display: grid;
+  place-items: center;
+  font: 500 12px "JetBrains Mono";
+  margin-right: 12px;
+}
+.profile-card h2 {
+  margin: 0 0 4px;
+  font: 500 18px "Inter Tight";
+}
+.profile-card p {
+  margin: 0;
+  font: 400 8px "JetBrains Mono";
+  color: var(--muted);
+}
+.profile-card > span {
+  margin-left: auto;
+  font: 500 7px "JetBrains Mono";
+}
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+.profile-stats div {
+  padding: 13px 0;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  gap: 4px;
+}
+.profile-stats div:last-child {
+  border: 0;
+}
+.profile-stats b {
+  font: 400 19px "Inter Tight";
+}
+.profile-stats span {
+  font: 400 6px "JetBrains Mono";
+  color: var(--muted);
+}
+.favourite-teams button {
+  grid-template-columns: 42px 1fr auto;
+}
+.favourite-teams .add-team {
+  grid-template-columns: 42px 1fr;
+}
+.add-team > i {
+  width: 34px;
+  height: 34px;
+  border: 1px dashed var(--muted);
+  display: grid;
+  place-items: center;
+  font-style: normal;
+}
+.settings-list > div {
+  min-height: 54px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.settings-list > div:last-child {
+  border: 0;
+}
+.settings-list span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.settings-list b {
+  font: 500 11px "Inter Tight";
+}
+.settings-list small {
+  font: 400 7px "JetBrains Mono";
+  color: var(--muted);
+}
+.toggle {
+  width: 34px;
+  height: 18px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  padding: 2px;
+  cursor: pointer;
+}
+.toggle i {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: var(--muted);
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+.toggle.on {
+  background: #d71920;
+  border-color: #d71920;
+}
+.toggle.on i {
+  background: #fff;
+  transform: translateX(16px);
+}
+.wide-action {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 13px;
+  display: flex;
+  justify-content: space-between;
+  font: 500 8px "JetBrains Mono";
+  cursor: pointer;
+}
