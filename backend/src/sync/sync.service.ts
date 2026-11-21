@@ -42,44 +42,14 @@ export class SyncService {
     }
   }
 
-  // Football live: every 2 minutes, always — no throttling
+  // Football live-push timer: every 2 minutes, push the latest live matches
+  // straight from Goal API to connected WebSocket clients. No DB writes, no sync.
   @Cron('*/2 * * * *')
   async syncFootballLive() {
     await this.runJob('football-live', 2 * 60_000, async () => {
-      this.logger.log('[CRON] Syncing live football...');
-      await this.football.syncLive();
-      // Also clean up matches that are still marked live but kickoff was >3 hours ago
-      await this.football.cleanupStaleMatches();
       const matches = await this.football.getLive();
       this.liveGateway.pushFootballUpdate(matches);
       this.logger.log(`[CRON] Pushed ${matches.length} live football matches`);
-    });
-  }
-
-  // Today fixtures twice a day
-  @Cron('0 7,15 * * *')
-  async syncFootballToday() {
-    await this.runJob('football-today', 60_000, async () => {
-      this.logger.log('[CRON] Syncing today football fixtures...');
-      await this.football.syncToday();
-    });
-  }
-
-  // Sync Goal API results every hour — they have goalApiId which enables match detail
-  @Cron('0 * * * *')
-  async syncGoalApiResults() {
-    await this.runJob('goalapi-results', 55 * 60_000, async () => {
-      this.logger.log('[CRON] Syncing Goal API results...');
-      await this.football.syncGoalApiResults();
-    });
-  }
-
-  // Upcoming 7 days once a day at 6am — uses football-data.org (no quota cost)
-  @Cron('0 6 * * *')
-  async syncUpcoming() {
-    await this.runJob('football-upcoming', 60_000, async () => {
-      this.logger.log('[CRON] Syncing upcoming fixtures...');
-      await this.football.syncUpcoming(7);
     });
   }
 

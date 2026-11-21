@@ -1,6 +1,7 @@
 // Normalized internal match models — provider-agnostic
 
 export interface NormalizedFootballMatch {
+  id: string; // Goal API fixture id — equals goalApiId; frontend uses it for keys/dedupe/nav
   providerId: string;
   providerName: string; // which API it came from
   homeTeam: string;
@@ -22,6 +23,7 @@ export interface NormalizedFootballMatch {
   round: string | null;
   venue: string | null;
   kickoff: Date;
+  lastSyncedAt: Date; // when Goal API last returned this row
 }
 
 export interface NormalizedCricketMatch {

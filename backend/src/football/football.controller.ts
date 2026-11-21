@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { FootballService } from './football.service';
 
@@ -50,20 +50,4 @@ export class FootballController {
   @Get('leagues/top')
   @ApiOperation({ summary: 'Get top leagues list from Goal API' })
   getTopLeagues() { return this.footballService.getTopLeagues(); }
-
-  @Post('sync/live')
-  @ApiOperation({ summary: 'Trigger live match sync' })
-  syncLive() { return this.footballService.syncLive(); }
-
-  @Post('sync/today')
-  @ApiOperation({ summary: 'Trigger today fixtures sync' })
-  syncToday() { return this.footballService.syncToday(); }
-
-  @Post('sync/date/:date')
-  @ApiOperation({ summary: 'Sync fixtures for a specific date' })
-  syncDate(@Param('date') date: string) { return this.footballService.syncDate(date); }
-
-  @Post('sync/upcoming')
-  @ApiOperation({ summary: 'Sync next 7 days from football-data.org' })
-  syncUpcoming() { return this.footballService.syncUpcoming(7); }
 }

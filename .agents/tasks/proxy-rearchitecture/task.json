@@ -1,0 +1,7 @@
+{
+  "task_id": "task-proxy-rearchitecture",
+  "task_description": "Rearchitect the Score Koto backend from a sync-and-store system to a Goal API pass-through proxy. The DB keeps cricket data, sync logs, and api-usage tracking; it no longer stores football matches. Every football endpoint reads Goal API directly on every request. The frontend's match identifier becomes the Goal API fixture id (goalApiId). Cricket keeps its existing DB-backed flow.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

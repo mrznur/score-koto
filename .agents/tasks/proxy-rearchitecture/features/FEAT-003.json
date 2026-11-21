@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-003",
+  "type": "docs",
+  "description": "Update the project documentation to reflect the Goal API pass-through proxy architecture. Football is no longer synced to a DB; all football data comes directly from Goal API on every request. The secondary football providers and the football sync cron are gone (only cricket sync + a football live-push timer remain). The DB keeps cricket data, sync logs, and api-usage tracking. Independent of FEAT-001/FEAT-002 code, but should be done after them so the docs describe the final state. Pure docs — must not alter any code.",
+  "status": "pending",
+  "steps": [
+    "Rewrite docs/ARCHITECTURE.md: state Goal API is the single source of truth for football; no football match storage; FootballService is a pass-through proxy (every endpoint reads Goal API directly); secondary football providers removed; SyncService keeps only cricket sync + a football live-push timer (*/2 * * * *) that fetches Goal API live data and pushes via WebSocket; the DB stores CricketMatch/CricketScorecard + SyncLog + ApiUsage (no FootballMatch). Update the module graph (drop ApiFootballProvider/FootballDataProvider/TheSportsDbProvider/FootballProviderManager), the schema table (remove FootballMatch row), the sync schedule table (remove football-today/goalapi-results/football-upcoming rows; keep football live-push + cricket), and the data-flow diagram.",
+    "Rewrite docs/API_PROVIDERS.md: remove the API-Football, football-data.org, and TheSportsDB sections (deleted providers). Keep the Goal API section (now the sole football provider) and the Cricket (CricketData) section. Update the 'Quota budget' table to drop the deleted providers. Add a short note that football endpoints are pass-through Goal API proxies with no server-side caching.",
+    "Rewrite docs/DEVELOPMENT.md: remove the 'Trigger a manual sync' football curl commands (POST /football/sync/* are gone); keep the cricket sync command. Update the env-var table — FOOTBALL_API_KEY and FOOTBALL_DATA_KEY are no longer needed for football (note they are retained in .env but unused); GOAL_API_KEY and CRICKET_API_KEY remain required. Update the 'Project state' checklist to reflect the proxy architecture.",
+    "Rewrite PROGRESS.md: football = Goal API proxy (no DB football storage); removed secondary providers; sync cron gutted to cricket + live-push; update the football REST endpoint table (remove the 4 sync POST routes; note live returns live + recently finished, fixtures returns today's NS, results returns results/today, matches/:id takes the goalApiId); update the provider list and the 'Known issues/decisions' table (the dead src/common/app.module.ts is now deleted).",
+    "Verify: re-read all four docs to confirm they describe the proxy architecture with no remaining references to football DB sync or the deleted secondary providers, and confirm no code was touched: `cd f:\\Score Koto\\backend && npm run build` and `cd f:\\Score Koto\\android && npx tsc --noEmit` still pass."
+  ],
+  "acceptance_criteria": [
+    "docs/ARCHITECTURE.md describes football as a Goal API pass-through proxy with no football DB storage and no secondary football providers.",
+    "docs/API_PROVIDERS.md has no section for API-Football, football-data.org, or TheSportsDB.",
+    "docs/DEVELOPMENT.md has no football sync curl commands and the env-var table reflects that only GOAL_API_KEY and CRICKET_API_KEY are needed.",
+    "PROGRESS.md endpoint table and provider list match the code (no football sync POST routes; no deleted providers).",
+    "No source code was modified by this FEAT — `npm run build` and `npx tsc --noEmit` still pass."
+  ],
+  "verification": [
+    "cd f:\\Score Koto\\backend && npm run build  (expect: 0 errors — docs edits must not have touched code)",
+    "cd f:\\Score Koto\\android && npx tsc --noEmit  (expect: exit 0)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

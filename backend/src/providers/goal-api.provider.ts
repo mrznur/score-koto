@@ -93,6 +93,13 @@ export class GoalApiProvider {
     return data.data ?? null;
   }
 
+  // Normalized fixture detail — used by match detail so the header reflects the
+  // live score/status straight from Goal API, with `id === goalApiId`.
+  async getFixtureNormalized(fixtureId: string) {
+    const f = await this.getFixtureDetail(fixtureId);
+    return f ? this.normalize(f) : null;
+  }
+
   // ── Standings ──────────────────────────────────────────────────────────────
 
   async getStandings(leagueId: string) {
@@ -131,6 +138,8 @@ export class GoalApiProvider {
     return {
       providerId: `goalapi-${f.id}`,
       goalApiId: f.id,
+      id: f.id,
+      lastSyncedAt: new Date(),
       providerName: this.name,
       homeTeam: f.homeTeamName,
       awayTeam: f.awayTeamName,
