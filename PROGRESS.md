@@ -1,8 +1,8 @@
 # Score Koto — Build Progress
 
-## Current state (as of last commit: 32dc6fd "broken version")
+## Current state
 
-The repo is at its first commit. Everything listed below is what currently exists in the working tree.
+Football is served as a **Goal API pass-through proxy**: no football match data is stored in the database, and every football endpoint reads Goal API directly on each request. The secondary football providers (API-Football, football-data.org, TheSportsDB) and the `FootballProviderManager` merge layer have been removed. The sync cron is gutted to two jobs: a football live-push timer (Goal API → WebSocket) and cricket sync (DB-backed). Cricket remains synced and persisted. The dead `backend/src/common/app.module.ts` duplicate has been deleted so the backend builds.
 
 ---
 
@@ -13,54 +13,51 @@ The repo is at its first commit. Everything listed below is what currently exist
 - **NestJS** API running at `http://localhost:3000/api/v1`
 - **PostgreSQL** via Docker Compose (port 5433 → 5432 inside container)
 - **Redis** via Docker Compose (port 6379) — in docker-compose.yml but not actively used by any module yet
-- **Prisma ORM** with 5 migrations applied (`init`, `add_logos`, `add_cricket_team_info`, `add_country_flag`, `add_goal_api_id`)
+- **Prisma ORM**; schema applied with `prisma db push` (historical migration folders retained)
 - **Swagger** docs at `http://localhost:3000/api/docs`
 
 #### Modules
 - `AppModule` — root module, loads ConfigModule, ScheduleModule, and all feature modules
-- `FootballModule` — football CRUD + sync + match detail
-- `CricketModule` — cricket CRUD + sync + scorecard
+- `FootballModule` — Goal API pass-through proxy (no PrismaService, no DB)
+- `CricketModule` — cricket CRUD + sync + scorecard (DB-backed)
 - `SyncModule` — scheduled background sync via `@nestjs/schedule` (Cron)
 - `LiveModule` — Socket.IO WebSocket gateway
 - `HealthModule` — health check + provider status + sync log endpoints
-- `ProvidersModule` — all provider adapters
-- `QuotaModule` / `QuotaService` — tracks API-Football daily quota in the `ApiUsage` table
+- `ProvidersModule` — provider adapters (Goal API + CricketData only)
+- `QuotaModule` / `QuotaService` — retained `@Global` module; provides PrismaService + QuotaService. No football provider writes to `ApiUsage` (Goal API has no quota); cricket quota is tracked in-memory in `CricketProviderManager`.
 
 #### Database schema (Prisma)
-- `FootballMatch` — stores normalised match data from all football providers; includes `goalApiId` field for linking to Goal API match detail
 - `CricketMatch` — stores normalised cricket match data from CricketData
 - `CricketScorecard` — per-innings batting/bowling scorecard, related to `CricketMatch`
-- `SyncLog` — records each sync job outcome (provider, job name, status, record count, error)
-- `ApiUsage` — tracks API-Football requests per UTC day
+- `SyncLog` — records each sync job outcome (provider, job, status, record count, error). Written by the cricket sync job; the football live-push timer does not write here.
+- `ApiUsage` — per-provider daily request tracking, retained from the multi-provider era (currently not actively written).
+
+There is **no `FootballMatch` model** — football is never persisted.
 
 #### Football providers (ProvidersModule)
-- **GoalApiProvider** (`goal-api`) — primary; no daily quota; covers live, by-date, results, match events/stats/lineups/commentary, standings, team data
-- **ApiFootballProvider** (`api-football`) — secondary; 100 req/day tracked in DB via QuotaService; live + by-date
-- **FootballDataProvider** (`football-data`) — always-on; 10 req/min rate-limited; by-date + date-range; covers top 12 European competitions + WC/Copa Libertadores
-- **TheSportsDbProvider** (`thesportsdb`) — fallback; live scores + team badge lookup
-- **FootballProviderManager** — merges results from all providers; deduplicates by team name + date
+- **GoalApiProvider** (`goal-api`) — sole football provider; no daily quota; pass-through for live, by-date, results, and match detail (events/stats/lineups/commentary), standings, and team data. Results are not cached or stored.
+
+The API-Football, football-data.org, and TheSportsDB providers and the `FootballProviderManager` merge/dedup layer have been removed.
 
 #### Cricket providers (ProvidersModule)
-- **CricketProviderManager** — wraps CricketData API; supports two API keys (primary + optional secondary); auto-rotates when first key quota is exhausted
+- **CricketProviderManager** — wraps CricketData API; supports two API keys (primary + optional secondary); auto-rotates when the first key quota is exhausted. Quota tracked in-memory (resets on restart).
 
 #### Football REST endpoints (`/api/v1/football/...`)
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/live` | Live matches from DB |
-| GET | `/fixtures` | Upcoming NS matches |
-| GET | `/results` | Recent FT matches |
-| GET | `/matches/:id` | Match + Goal API events/stats/lineups/commentary |
-| GET | `/by-date/:date` | All matches for a date |
+| GET | `/live` | Live matches + today's results from Goal API (merged, deduped by id; live wins) |
+| GET | `/fixtures` | Today's upcoming NS matches from Goal API (kickoff ≥ now, capped at 50) |
+| GET | `/results` | Today's finished results from Goal API |
+| GET | `/matches/:id` | Match + Goal API events/statistics/lineups/commentary; `:id` is the Goal API fixture id (`goalApiId`) |
+| GET | `/by-date/:date` | All matches for a date from Goal API |
 | GET | `/standings/:leagueId` | Standings from Goal API |
 | GET | `/teams/:teamId` | Team profile from Goal API |
 | GET | `/teams/:teamId/squad` | Squad from Goal API |
 | GET | `/teams/:teamId/results` | Team results from Goal API |
 | GET | `/teams/:teamId/fixtures` | Team upcoming fixtures from Goal API |
 | GET | `/leagues/top` | Hardcoded list of top 10 leagues with Goal API IDs |
-| POST | `/sync/live` | Trigger live sync |
-| POST | `/sync/today` | Trigger today sync |
-| POST | `/sync/date/:date` | Trigger sync for a specific date |
-| POST | `/sync/upcoming` | Sync next 7 days via football-data.org |
+
+There are no football sync POST routes — football is a pass-through proxy, so every read is already live.
 
 #### Cricket REST endpoints (`/api/v1/cricket/...`)
 | Method | Path | Description |
@@ -81,16 +78,13 @@ The repo is at its first commit. Everything listed below is what currently exist
 #### Scheduled sync (SyncService)
 | Job | Cron | Description |
 |-----|------|-------------|
-| `football-live` | every 2 min | Syncs live matches + pushes via WebSocket; cleans stale live matches |
-| `football-today` | 07:00 + 15:00 UTC | Syncs today's fixtures |
-| `goalapi-results` | every hour | Syncs Goal API results (carries goalApiId) |
-| `football-upcoming` | 06:00 UTC daily | Syncs next 7 days from football-data.org |
-| `cricket` | every 5 min | Syncs current matches; throttles to every 30 min when nothing active |
+| `football-live` | every 2 min | Fetches live matches from Goal API and pushes via WebSocket. No DB writes. |
+| `cricket` | every 5 min | Syncs current matches to DB; throttles to every 30 min when nothing active; pushes live matches via WebSocket. |
 
 #### WebSocket (LiveGateway)
 - Socket.IO server at root path
-- Emits `football:live` after every live sync
-- Emits `cricket:live` after every cricket sync
+- Emits `football:live` after every football live-push tick (Goal API data)
+- Emits `cricket:live` after every cricket sync (DB data)
 - CORS open (`origin: '*'`)
 
 ---
@@ -118,7 +112,7 @@ RootNavigator (NativeStack)
 | Screen | Data source | Notes |
 |--------|-------------|-------|
 | HomeScreen | `/football/live`, `/cricket/live`, `/football/fixtures` | Hero match card, cricket card, live list, upcoming fixtures, sports grid. WebSocket push + 30s poll |
-| LiveScreen | `/football/live`, `/cricket/live` | Collapsible competition groups. WebSocket push + 30s poll |
+| LiveScreen | `/football/live`, `/cricket/live` | Live-only; collapsible competition groups. WebSocket push + 30s poll |
 | FixturesScreen | `/football/by-date/:date`, `/cricket/by-date/:date` | Date strip, sport + status filters, region-grouped leagues |
 | StandingsScreen | `/football/leagues/top`, `/football/standings/:leagueId` | Horizontal league selector, table with promotion colour bands |
 | MatchDetailScreen | `/football/matches/:id` | 4 tabs: Overview, Stats, Lineup, Commentary. Auto-refresh every 60s when live |
@@ -167,9 +161,8 @@ React + Vite + Tailwind CSS v4 app running in Figma Make. All screens present: H
 |-------|----------|
 | Backend URL is a hardcoded LAN IP in `android/src/services/api.ts` | Change `BASE_URL` and `SOCKET_URL` to match your machine's IP |
 | Goal API events/lineups — data depends on provider coverage | Show "not provided" message when unavailable |
-| API-Football events/lineups on free plan | Not available; handled gracefully |
 | Cricket ball-by-ball not on free CricketData plan | Scorecard only |
-| Redis in docker-compose.yml but no Redis-backed cache module | In-memory quota tracking + DB persistence only |
+| Cricket quota tracked in-memory in `CricketProviderManager` | Resets on backend restart; no daily persistence (ApiUsage table retained but unused) |
+| Redis in docker-compose.yml but no Redis-backed cache module | Not actively used; football has no cache by design (pass-through proxy) |
 | ProfileScreen data is hardcoded | No user accounts implemented |
 | ExploreScreen live counts are hardcoded | No live sport counts wired to real data |
-| `backend/src/common/app.module.ts` — duplicate of `backend/src/app.module.ts` | Dead file; `src/main.ts` imports from `src/app.module.ts` |

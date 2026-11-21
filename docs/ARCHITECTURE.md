@@ -7,30 +7,31 @@ Android App (React Native / Expo)
     │
     │  REST (JSON) + WebSocket (Socket.IO)
     ▼
-NestJS Backend  ──►  PostgreSQL (match data, sync logs, API usage)
-    │           ──►  Redis (in docker-compose, not yet actively used)
+NestJS Backend
     │
-    │  HTTP (server-side, rate-limited)
-    ▼
-External Sports APIs
-  Goal API         (api.goal-api.com)
-  API-Football     (v3.football.api-sports.io) — 100 req/day
-  football-data.org (api.football-data.org/v4) — 10 req/min
-  TheSportsDB      (thesportsdb.com)           — unlimited free
-  CricketData      (api.cricapi.com/v1)        — 100 req/day × keys
+    ├── Football  ──► Goal API (api.goal-api.com)   ← pass-through proxy, no DB storage
+    │                 sole football provider, no daily quota
+    │
+    ├── Cricket   ──► CricketData (api.cricapi.com/v1) ──► PostgreSQL (cricket data)
+    │                 100 req/day × keys, persisted
+    │
+    └── PostgreSQL (cricket data, sync logs, API-usage tracking)
+        Redis (in docker-compose, not yet actively used)
 ```
 
-The Android app never contacts external sports APIs directly. All provider requests run server-side, deduplicated, and persisted in PostgreSQL.
+Football is served as a **Goal API pass-through proxy**: every football endpoint reads Goal API directly on each request and returns the normalized result. No football match data is stored in the database, results are not merged across providers, and there is no server-side cache. Cricket is still synced on a schedule and persisted in PostgreSQL. The Android app never contacts external sports APIs directly — every request goes through the backend.
+
+The match `id` used throughout the system **is the Goal API fixture id** (`goalApiId`). It flows unchanged from Goal API → backend normalization (`id = goalApiId`) → frontend (React keys, `dedupeMatches`, `sameMatch`, navigation) → back to `/football/matches/:id` for detail. This single id keeps every screen referencing the same match in lock-step.
 
 ---
 
 ## Android app
 
-**Language:** TypeScript  
-**Framework:** React Native 0.88.1 + Expo ~58  
-**Navigation:** React Navigation 7 (NativeStack + BottomTabs)  
-**HTTP client:** Axios  
-**WebSocket client:** socket.io-client  
+**Language:** TypeScript
+**Framework:** React Native 0.88.1 + Expo ~58
+**Navigation:** React Navigation 7 (NativeStack + BottomTabs)
+**HTTP client:** Axios
+**WebSocket client:** socket.io-client
 
 ### File structure
 ```
@@ -72,30 +73,32 @@ Screen
 
 ## Backend
 
-**Framework:** NestJS 10 (TypeScript)  
-**ORM:** Prisma 5  
-**Database:** PostgreSQL 16  
-**Scheduler:** `@nestjs/schedule` (Cron)  
-**WebSocket:** Socket.IO via `@nestjs/platform-socket.io`  
-**API docs:** Swagger (`@nestjs/swagger`) at `/api/docs`  
+**Framework:** NestJS 10 (TypeScript)
+**ORM:** Prisma 5
+**Database:** PostgreSQL 16
+**Scheduler:** `@nestjs/schedule` (Cron)
+**WebSocket:** Socket.IO via `@nestjs/platform-socket.io`
+**API docs:** Swagger (`@nestjs/swagger`) at `/api/docs`
 
 ### Module graph
 ```
 AppModule
   ├── ConfigModule (global)
   ├── ScheduleModule
-  ├── QuotaModule
-  │     └── QuotaService — tracks API-Football usage in ApiUsage table
+  ├── QuotaModule (@global; provides PrismaService + QuotaService)
   ├── FootballModule
   │     ├── FootballController
-  │     ├── FootballService
-  │     └── → ProvidersModule, QuotaModule
+  │     ├── FootballService        ← Goal API pass-through proxy (no PrismaService)
+  │     └── → ProvidersModule
   ├── CricketModule
   │     ├── CricketController
   │     ├── CricketService
+  │     ├── PrismaService
   │     └── → ProvidersModule
   ├── HealthModule
-  │     └── HealthController
+  │     ├── HealthController
+  │     ├── PrismaService
+  │     └── → FootballModule, CricketModule
   ├── LiveModule
   │     └── LiveGateway (Socket.IO)
   └── SyncModule
@@ -103,41 +106,39 @@ AppModule
               └── → FootballService, CricketService, LiveGateway
 
 ProvidersModule (imported by FootballModule + CricketModule)
-  ├── GoalApiProvider
-  ├── ApiFootballProvider
-  ├── FootballDataProvider
-  ├── TheSportsDbProvider
-  ├── FootballProviderManager   ← merges + deduplicates football
-  └── CricketProviderManager    ← wraps CricketData with multi-key rotation
+  ├── GoalApiProvider            ← sole football provider
+  └── CricketProviderManager     ← wraps CricketData with multi-key rotation
 ```
+
+The secondary football providers (API-Football, football-data.org, TheSportsDB) and the `FootballProviderManager` merge/dedup layer have been removed. `ProvidersModule` now exposes only `GoalApiProvider` and `CricketProviderManager`.
+
+### Data model — football
+
+Football has **no database model**. `FootballService` is a stateless pass-through: each method calls `GoalApiProvider` and returns normalized `NormalizedFootballMatch` objects directly to the controller, which serializes them to the client. Nothing is upserted or cached. Each normalized match carries `id`, which equals the Goal API fixture id (`goalApiId`), plus `lastSyncedAt` (when Goal API returned the row).
 
 ### Database schema summary
 | Model | Key fields |
 |-------|-----------|
-| `FootballMatch` | `providerId` (unique), `goalApiId`, teams, scores, status, kickoff, competition |
 | `CricketMatch` | `providerId` (unique), teams, score (JSON), matchStarted/matchEnded |
 | `CricketScorecard` | per-innings batting/bowling JSON, FK → CricketMatch |
 | `SyncLog` | provider, job, status, records, error, createdAt |
 | `ApiUsage` | provider + date (unique), requests, limit |
 
-### Provider deduplication
-
-`FootballProviderManager` merges results from all providers. A match is considered a duplicate if the home and away team names and the kickoff date all match (using substring matching to handle minor name differences). When a Goal API match and an API-Football match refer to the same fixture, the `goalApiId` from Goal API is copied onto the existing record.
+There is **no `FootballMatch` model** — football is never persisted. `SyncLog` is written by the cricket sync job only; the football live-push timer does not write to the DB.
 
 ### Sync schedule
 | Job | Cron | Min gap | Notes |
 |-----|------|---------|-------|
-| Live football | `*/2 * * * *` | 2 min | Always runs; pushes to WebSocket |
-| Today fixtures | `0 7,15 * * *` | — | Twice daily |
-| Goal API results | `0 * * * *` | 55 min | Carries goalApiId |
-| Upcoming 7 days | `0 6 * * *` | — | football-data.org |
-| Cricket | `*/5 * * * *` | 5 min active / 30 min idle | Throttles automatically |
+| Football live-push | `*/2 * * * *` | 2 min | Fetches live matches from Goal API and pushes them to WebSocket. No DB writes. |
+| Cricket | `*/5 * * * *` | 5 min active / 30 min idle | Syncs current matches to the DB and pushes live matches to WebSocket. Throttles automatically. |
+
+The football today/goalapi-results/upcoming sync jobs are gone — there is no football data to sync. `SyncService` now runs only the two jobs above.
 
 ### WebSocket events
 | Event | Direction | Payload |
 |-------|-----------|---------|
-| `football:live` | server → client | `FootballMatch[]` |
-| `cricket:live` | server → client | `CricketMatch[]` |
+| `football:live` | server → client | live football matches from Goal API (NormalizedFootballMatch[]) |
+| `cricket:live` | server → client | `CricketMatch[]` from DB |
 
 ---
 
