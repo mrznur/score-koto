@@ -15,74 +15,18 @@ import { Colors } from '../constants/colors';
 import { Fonts } from '../constants/typography';
 import { useAppColors } from '../hooks/useAppColors';
 import TopBar from '../components/layout/TopBar';
-import FootballMatchRow from '../components/match/FootballMatchRow';
 import LiveDot from '../components/ui/LiveDot';
 import { footballApi, cricketApi, FootballMatch, CricketMatch } from '../services/api';
 import { useLiveUpdates } from '../hooks/useLiveUpdates';
-
-type SportFilter = 'ALL' | 'FOOTBALL' | 'CRICKET';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared "top league" gating logic — identical to FixturesScreen.
-// ─────────────────────────────────────────────────────────────────────────────
-const TOP_LEAGUES: Array<{ name: string; slot: number }> = [
-  { name: 'uefa champions league', slot: 1 },
-  { name: 'champions league', slot: 1 },
-  { name: 'premier league', slot: 2 },
-  { name: 'primera division', slot: 3 },
-  { name: 'la liga', slot: 3 },
-  { name: 'bundesliga', slot: 4 },
-  { name: 'serie a', slot: 5 },
-  { name: 'ligue 1', slot: 6 },
-  { name: 'uefa europa league', slot: 7 },
-  { name: 'europa league', slot: 7 },
-  { name: 'uefa conference league', slot: 8 },
-  { name: 'conference league', slot: 8 },
-];
-
-const TOP_COUNTRIES: Record<number, string> = {
-  2: 'england',
-  3: 'spain',
-  4: 'germany',
-  5: 'italy',
-  6: 'france',
-};
-
-function getSlot(competition: string, country: string | null): number {
-  const low = competition.toLowerCase().trim();
-  const countryLow = (country ?? '').toLowerCase();
-
-  for (const rule of TOP_LEAGUES) {
-    if (low !== rule.name) continue;
-    const expectedCountry = TOP_COUNTRIES[rule.slot];
-    if (expectedCountry && !countryLow.includes(expectedCountry)) continue;
-    return rule.slot;
-  }
-  return 99;
-}
-
-function isDefaultOpen(competition: string, country: string | null): boolean {
-  return getSlot(competition, country) <= 6;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-function groupByCompetition(matches: FootballMatch[]) {
-  const map = new Map<string, { competition: string; country: string | null; matches: FootballMatch[] }>();
-  for (const m of matches) {
-    const key = `${m.competition}__${m.country ?? ''}`;
-    if (!map.has(key)) {
-      map.set(key, { competition: m.competition, country: m.country, matches: [] });
-    }
-    map.get(key)!.matches.push(m);
-  }
-  return Array.from(map.values());
-}
-
-function matchStatus(m: FootballMatch): string {
-  if (m.elapsed) return `${m.elapsed}'`;
-  return m.status;
-}
+import { dedupeMatches, fixEarlyLive } from '../utils/featured';
+import {
+  buildRegionGroups,
+  LeagueRow,
+  RegionHeader,
+  SportFilterRow,
+  SportSectionLabel,
+  SportFilter,
+} from '../utils/matchGrouping';
 
 function CricketCard({ match, onPress, colors }: { match: CricketMatch; onPress: () => void; colors: any }) {
   return (
@@ -121,63 +65,6 @@ function CricketCard({ match, onPress, colors }: { match: CricketMatch; onPress:
   );
 }
 
-// Collapsible competition group — chevron matches FixturesScreen (\u2227 / \u2228)
-function CompetitionGroup({
-  competition,
-  country,
-  matches,
-  colors,
-  onMatchPress,
-}: {
-  competition: string;
-  country: string | null;
-  matches: FootballMatch[];
-  colors: any;
-  onMatchPress: (id: string) => void;
-}) {
-  const [open, setOpen] = useState(isDefaultOpen(competition, country));
-
-  return (
-    <View>
-      <TouchableOpacity
-        style={[styles.compHead, { borderBottomColor: colors.line }]}
-        onPress={() => setOpen(o => !o)}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: open }}
-        accessibilityLabel={`${open ? 'Collapse' : 'Expand'} ${competition}`}
-      >
-        <Text style={[styles.compName, { color: colors.text }]} numberOfLines={1}>
-          {competition}
-        </Text>
-        <View style={styles.compRight}>
-          <Text style={[styles.compCount, { color: Colors.primary }]}>
-            {matches.length} LIVE
-          </Text>
-          {/* ✅ Same glyphs as FixturesScreen */}
-          <Text style={[styles.chevron, { color: colors.muted }]}>{open ? '\u2227' : '\u2228'}</Text>
-        </View>
-      </TouchableOpacity>
-      {open && (
-        <View style={[styles.matchList, { borderColor: colors.line, backgroundColor: colors.surface }]}>
-          {matches.map(m => (
-            <FootballMatchRow
-              key={m.id}
-              home={m.homeTeam}
-              away={m.awayTeam}
-              homeLogo={m.homeTeamLogo}
-              awayLogo={m.awayTeamLogo}
-              score={`${m.homeScore ?? '-'} - ${m.awayScore ?? '-'}`}
-              status={matchStatus(m)}
-              onClick={() => onMatchPress(m.id)}
-            />
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
-
 export default function LiveScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
@@ -198,7 +85,7 @@ export default function LiveScreen() {
         footballApi.getLive(),
         cricketApi.getLive(),
       ]);
-      setFootball(fb);
+      setFootball(dedupeMatches(fixEarlyLive(fb)));
       setCricket(cr);
       setLastUpdated(new Date());
     } catch (e) {
@@ -216,14 +103,16 @@ export default function LiveScreen() {
   }, [load]);
 
   useLiveUpdates({
-    onFootballUpdate: (matches) => { setFootball(matches); setLastUpdated(new Date()); },
+    onFootballUpdate: (matches) => { setFootball(dedupeMatches(fixEarlyLive(matches))); setLastUpdated(new Date()); },
     onCricketUpdate: (matches) => { setCricket(matches); setLastUpdated(new Date()); },
   });
 
   const showFootball = sport === 'ALL' || sport === 'FOOTBALL';
   const showCricket = sport === 'ALL' || sport === 'CRICKET';
-  const totalLive = (showFootball ? football.length : 0) + (showCricket ? cricket.length : 0);
-  const grouped = groupByCompetition(showFootball ? football : []);
+  const footballInView = showFootball ? football : [];
+  const cricketInView = showCricket ? cricket : [];
+  const totalLive = footballInView.length + cricketInView.length;
+  const regionGroups = buildRegionGroups(footballInView);
 
   const secondsAgo = lastUpdated
     ? Math.round((Date.now() - lastUpdated.getTime()) / 1000)
@@ -251,14 +140,7 @@ export default function LiveScreen() {
         />
       </View>
 
-      <View style={[styles.filterRow, { borderBottomColor: colors.line }]}>
-        {(['ALL', 'FOOTBALL', 'CRICKET'] as SportFilter[]).map(f => (
-          <TouchableOpacity key={f} style={styles.filterTab} onPress={() => setSport(f)}>
-            <Text style={[styles.filterLabel, { color: sport === f ? colors.text : colors.muted }]}>{f}</Text>
-            {sport === f && <View style={[styles.filterBar, { backgroundColor: Colors.primary }]} />}
-          </TouchableOpacity>
-        ))}
-      </View>
+      <SportFilterRow value={sport} onChange={setSport} colors={colors} />
 
       <View style={[styles.ticker, { borderBottomColor: colors.line }]}>
         <Text style={[styles.small, { color: colors.muted }]}>DATA SYNC</Text>
@@ -276,16 +158,26 @@ export default function LiveScreen() {
         </View>
       ) : (
         <>
-          {showFootball && grouped.map(({ competition, country, matches }) => (
-            <CompetitionGroup
-              key={`${competition}__${country ?? ''}`}
-              competition={competition}
-              country={country}
-              matches={matches}
-              colors={colors}
-              onMatchPress={id => navigation.navigate('MatchDetail', { matchId: id })}
-            />
-          ))}
+          {showFootball && regionGroups.length > 0 && (
+            <>
+              {sport === 'ALL' && (
+                <SportSectionLabel title="FOOTBALL" count={footballInView.length} colors={colors} />
+              )}
+              {regionGroups.map((group, gi) => (
+                <View key={`${group.region}-${gi}`}>
+                  <RegionHeader group={group} colors={colors} />
+                  {group.leagues.map(league => (
+                    <LeagueRow
+                      key={`${league.competition}__${league.country}`}
+                      league={league}
+                      colors={colors}
+                      onMatchPress={id => navigation.navigate('MatchDetail', { matchId: id })}
+                    />
+                  ))}
+                </View>
+              ))}
+            </>
+          )}
 
           {showCricket && cricket.length > 0 && (
             <>
@@ -316,19 +208,12 @@ export default function LiveScreen() {
 const styles = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, paddingHorizontal: 7, paddingVertical: 5 },
   badgeText: { fontFamily: Fonts.jetbrainsMono, fontSize: 8, color: Colors.primary },
-  filterRow: { flexDirection: 'row', paddingHorizontal: 16, borderBottomWidth: 1, height: 44, alignItems: 'center' },
-  filterTab: { paddingRight: 20, height: '100%', justifyContent: 'center', position: 'relative' },
-  filterLabel: { fontFamily: Fonts.jetbrainsMonoMedium, fontSize: 10 },
-  filterBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 2 },
   ticker: { flexDirection: 'row', alignItems: 'center', height: 28, paddingHorizontal: 16, borderBottomWidth: 1, gap: 10 },
   tickerLine: { flex: 1, height: 1 },
   small: { fontFamily: Fonts.jetbrainsMono, fontSize: 8 },
   compHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1 },
-  compRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   compName: { fontFamily: Fonts.interTightMedium, fontSize: 12, flex: 1 },
   compCount: { fontFamily: Fonts.jetbrainsMonoMedium, fontSize: 8 },
-  chevron: { fontFamily: Fonts.interTight, fontSize: 16 }, // ✅ matches FixturesScreen (was 12)
-  matchList: { borderTopWidth: 0, borderBottomWidth: 1, borderLeftWidth: 0, borderRightWidth: 0, borderColor: 'transparent', marginBottom: 2 },
   empty: { paddingVertical: 60, alignItems: 'center' },
   emptyText: { fontFamily: Fonts.jetbrainsMono, fontSize: 11 },
   cricketCard: { borderWidth: 1, borderTopWidth: 0, padding: 12, marginBottom: 2 },
