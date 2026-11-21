@@ -49,20 +49,50 @@ export class GoalApiProvider {
     return res.data;
   }
 
+  // ── In-memory cache ───────────────────────────────────────────────────────
+  // Prevents rate-limit 429s when multiple screens/polls hit the same endpoint
+  // within the same window. TTLs are short enough that data stays fresh.
+  private readonly cache = new Map<string, { data: any; expiresAt: number }>();
+
+  private async getCached(endpoint: string, ttlMs: number): Promise<any> {
+    const now = Date.now();
+    const hit = this.cache.get(endpoint);
+    if (hit && hit.expiresAt > now) return hit.data;
+    try {
+      const data = await this.get(endpoint);
+      this.cache.set(endpoint, { data, expiresAt: now + ttlMs });
+      return data;
+    } catch (err: any) {
+      // On 429 or any network error, serve stale cache rather than crashing the request.
+      // The cache entry stays in place so the next caller also gets the stale value
+      // until the rate-limit window resets and a fresh fetch succeeds.
+      if (hit) {
+        this.logger.warn(`Goal API ${endpoint} failed (${err?.response?.status ?? err?.message}), serving stale cache`);
+        return hit.data;
+      }
+      throw err;
+    }
+  }
+
   // ── Fixtures ───────────────────────────────────────────────────────────────
 
   async getLive(): Promise<NormalizedFootballMatch[]> {
-    const data = await this.get('/fixtures/live');
+    // 2 min TTL matches the cron interval — only 1 real API call per cron tick
+    const data = await this.getCached('/fixtures/live', 2 * 60_000);
     return (data.data ?? []).map((f: any) => this.normalize(f));
   }
 
   async getByDate(date: string): Promise<NormalizedFootballMatch[]> {
-    const data = await this.get(`/fixtures/date/${date}`);
+    // 5 min for today (scores update slowly), 60 min for past/future (static)
+    const isToday = date === new Date().toISOString().split('T')[0];
+    const ttl = isToday ? 5 * 60_000 : 60 * 60_000;
+    const data = await this.getCached(`/fixtures/date/${date}`, ttl);
     return (data.data ?? []).map((f: any) => this.normalize(f));
   }
 
   async getResultsToday(): Promise<NormalizedFootballMatch[]> {
-    const data = await this.get('/results/today');
+    // 2 min TTL — results don't change that fast
+    const data = await this.getCached('/results/today', 2 * 60_000);
     return (data.data ?? []).map((f: any) => this.normalize(f));
   }
 

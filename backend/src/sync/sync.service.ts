@@ -42,10 +42,14 @@ export class SyncService {
     }
   }
 
-  // Football live-push timer: every 2 minutes, push the latest live matches
-  // straight from Goal API to connected WebSocket clients. No DB writes, no sync.
+  // Football live-push timer: every 2 minutes. The cache TTL matches so only
+  // 1 real Goal API call is made per tick — cached responses serve all other callers.
+  // Run only when matches are likely happening (6am–midnight UTC) to save quota.
   @Cron('*/2 * * * *')
   async syncFootballLive() {
+    const hour = new Date().getUTCHours();
+    const likelyActive = hour >= 6 && hour <= 23;
+    if (!likelyActive) return;
     await this.runJob('football-live', 2 * 60_000, async () => {
       const matches = await this.football.getLive();
       this.liveGateway.pushFootballUpdate(matches);
