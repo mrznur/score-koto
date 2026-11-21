@@ -49,7 +49,7 @@ pnpm dev                      # opens at http://localhost:8443
 ## API providers
 
 **Football:**
-- [Goal API](https://goal-api.com) — primary, no daily quota
+- [Goal API](https://goal-api.com) — primary, 1,000 requests/day (free tier), hard stop at 90% (900)
 - [API-Football](https://www.api-football.com) — secondary, 100 req/day free
 - [football-data.org](https://www.football-data.org) — fixtures/schedules, 10 req/min
 - [TheSportsDB](https://www.thesportsdb.com) — live fallback, unlimited free tier

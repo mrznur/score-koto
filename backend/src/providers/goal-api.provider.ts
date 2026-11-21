@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { NormalizedFootballMatch } from './provider.types';
+import { QuotaService } from '../common/quota.service';
 
 // Goal API status → internal status
 const STATUS_MAP: Record<string, string> = {
@@ -21,20 +22,54 @@ const STATUS_MAP: Record<string, string> = {
 };
 
 @Injectable()
-export class GoalApiProvider {
+export class GoalApiProvider implements OnModuleInit {
   readonly name = 'goal-api';
   private readonly logger = new Logger(GoalApiProvider.name);
   private readonly baseUrl = 'https://api.goal-api.com/v1';
   private readonly apiKey: string;
 
-  constructor(private config: ConfigService) {
+  // Daily budget (free tier = 1000/day). Hard stop at 90% so a reset-time mismatch cannot lock us out.
+  private readonly dailyLimit: number;
+  private readonly hardStop: number;
+  private usedToday = 0;
+  private usedDate = ''; // UTC day (YYYY-MM-DD) that usedToday belongs to
+
+  constructor(private config: ConfigService, private quota: QuotaService) {
     this.apiKey = this.config.get('GOAL_API_KEY');
+    this.dailyLimit = Number(this.config.get('GOAL_API_DAILY_LIMIT')) || 1000;
+    this.hardStop = Math.floor(this.dailyLimit * 0.9);
   }
 
-  get available(): boolean { return true; }
+  async onModuleInit() {
+    try {
+      await this.syncCounter();
+    } catch (e: any) {
+      this.logger.warn(`Could not load Goal API usage at boot: ${e?.message}`);
+    }
+  }
+
+  get available(): boolean { return this.usedToday < this.hardStop; }
 
   get status() {
-    return { name: this.name, available: true, quotaUsed: 0, quotaLimit: 999999, lastError: null };
+    return {
+      name: this.name,
+      available: this.available,
+      quotaUsed: this.usedToday,
+      quotaLimit: this.dailyLimit,
+      lastError: null,
+    };
+  }
+
+  private utcDay(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  // Loads today's count from the ApiUsage table when the process starts or the UTC day changes.
+  private async syncCounter() {
+    const day = this.utcDay();
+    if (this.usedDate === day) return;
+    this.usedToday = await this.quota.getUsed(this.name);
+    this.usedDate = day;
   }
 
   private get headers() {
@@ -42,6 +77,23 @@ export class GoalApiProvider {
   }
 
   private async get(endpoint: string) {
+    try {
+      await this.syncCounter();
+    } catch {
+      // DB unavailable: keep using the in-memory count
+    }
+
+    if (this.usedToday >= this.hardStop) {
+      throw new Error(`Goal API daily budget reached (${this.usedToday}/${this.dailyLimit})`);
+    }
+
+    // Count the attempt before the call (failed calls may count upstream too)
+    try {
+      this.usedToday = await this.quota.record(this.name, this.dailyLimit);
+    } catch {
+      this.usedToday += 1;
+    }
+
     const res = await axios.get(`${this.baseUrl}${endpoint}`, {
       headers: this.headers,
       timeout: 10000,

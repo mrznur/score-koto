@@ -5,7 +5,7 @@
 ### Goal API (sole provider)
 - **Base URL:** `https://api.goal-api.com/v1`
 - **Auth header:** `Authorization: Bearer <GOAL_API_KEY>`
-- **Quota:** None (unlimited on the plan in use)
+- **Quota:** 1,000 requests/day (free tier), tracked in the `ApiUsage` table; hard stop at 90% (900); served from stale cache after that
 - **Used by:** `GoalApiProvider`
 
 Football endpoints are **pass-through Goal API proxies with no server-side caching**: every read hits Goal API directly and returns the normalized result. Nothing is persisted in the database, so data is always as fresh as the latest API call.
@@ -61,7 +61,7 @@ Ball-by-ball data is not available on the free plan (`bbbEnabled: false`).
 
 | Provider | Daily limit | Jobs |
 |----------|-------------|------|
-| Goal API | None | Live push (every 2 min, pass-through), by-date, results, match detail — all pass-through, no DB |
+| Goal API | 1,000/day (hard stop at 900) | Live push (every 2 min, pass-through), by-date, results, match detail — all pass-through, no DB |
 | CricketData | 100/day × keys | Current matches every 5–30 min (synced to DB) |
 
-Goal API has no quota. CricketData quota is tracked in-memory inside `CricketProviderManager` (a per-key `used` counter that resets on restart); when the primary key is exhausted the manager rotates to the secondary key. The `ApiUsage` table is retained in the schema from the multi-provider era but is not actively written by the proxy.
+Goal API free tier is 1,000 requests/day, tracked in the `ApiUsage` table, hard stop at 90% (900), served from stale cache after that. CricketData quota is tracked in-memory inside `CricketProviderManager` (a per-key `used` counter that resets on restart); when the primary key is exhausted the manager rotates to the secondary key.

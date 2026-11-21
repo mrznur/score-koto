@@ -24,7 +24,7 @@ Football is served as a **Goal API pass-through proxy**: no football match data 
 - `LiveModule` — Socket.IO WebSocket gateway
 - `HealthModule` — health check + provider status + sync log endpoints
 - `ProvidersModule` — provider adapters (Goal API + CricketData only)
-- `QuotaModule` / `QuotaService` — retained `@Global` module; provides PrismaService + QuotaService. No football provider writes to `ApiUsage` (Goal API has no quota); cricket quota is tracked in-memory in `CricketProviderManager`.
+- `QuotaModule` / `QuotaService` — retained `@Global` module; provides PrismaService + QuotaService. Goal API free tier is 1,000 requests/day, tracked in the `ApiUsage` table, hard stop at 90% (900), served from stale cache after that; cricket quota is tracked in-memory in `CricketProviderManager`.
 
 #### Database schema (Prisma)
 - `CricketMatch` — stores normalised cricket match data from CricketData
@@ -35,7 +35,7 @@ Football is served as a **Goal API pass-through proxy**: no football match data 
 There is **no `FootballMatch` model** — football is never persisted.
 
 #### Football providers (ProvidersModule)
-- **GoalApiProvider** (`goal-api`) — sole football provider; no daily quota; pass-through for live, by-date, results, and match detail (events/stats/lineups/commentary), standings, and team data. Results are not cached or stored.
+- **GoalApiProvider** (`goal-api`) — sole football provider; 1,000 requests/day (free tier), hard stop at 90% (900), served from stale cache after that; pass-through for live, by-date, results, and match detail (events/stats/lineups/commentary), standings, and team data. Results are not cached or stored.
 
 The API-Football, football-data.org, and TheSportsDB providers and the `FootballProviderManager` merge/dedup layer have been removed.
 
@@ -162,7 +162,7 @@ React + Vite + Tailwind CSS v4 app running in Figma Make. All screens present: H
 | Backend URL is a hardcoded LAN IP in `android/src/services/api.ts` | Change `BASE_URL` and `SOCKET_URL` to match your machine's IP |
 | Goal API events/lineups — data depends on provider coverage | Show "not provided" message when unavailable |
 | Cricket ball-by-ball not on free CricketData plan | Scorecard only |
-| Cricket quota tracked in-memory in `CricketProviderManager` | Resets on backend restart; no daily persistence (ApiUsage table retained but unused) |
+| Cricket quota tracked in-memory in `CricketProviderManager` | Resets on backend restart; cricket quota is not persisted (Goal API daily quota is tracked in the ApiUsage table) |
 | Redis in docker-compose.yml but no Redis-backed cache module | Not actively used; football has no cache by design (pass-through proxy) |
 | ProfileScreen data is hardcoded | No user accounts implemented |
 | ExploreScreen live counts are hardcoded | No live sport counts wired to real data |

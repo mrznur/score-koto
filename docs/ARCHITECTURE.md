@@ -10,7 +10,7 @@ Android App (React Native / Expo)
 NestJS Backend
     │
     ├── Football  ──► Goal API (api.goal-api.com)   ← pass-through proxy, no DB storage
-    │                 sole football provider, no daily quota
+    │                 sole football provider, 1000 req/day, hard stop at 900 (stale cache after)
     │
     ├── Cricket   ──► CricketData (api.cricapi.com/v1) ──► PostgreSQL (cricket data)
     │                 100 req/day × keys, persisted

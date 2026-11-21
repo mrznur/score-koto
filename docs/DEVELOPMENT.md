@@ -74,6 +74,7 @@ pnpm dev                      # http://localhost:8443
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GOAL_API_KEY` | Yes | Goal API bearer token (sole football provider) |
+| `GOAL_API_DAILY_LIMIT` | No | Goal API daily request budget (default: 1000) |
 | `CRICKET_API_KEY` | Yes | CricketData primary key (100 req/day) |
 | `CRICKET_API_KEY_2` | No | CricketData secondary key (doubles cricket quota) |
 | `FOOTBALL_API_KEY` | No | Retained in `.env` but unused (API-Football provider removed) |
