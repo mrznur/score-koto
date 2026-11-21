@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "refactor",
   "description": "Frontend data-flow updates for the Goal API proxy. The match identifier is now the Goal API fixture id (goalApiId). Because the backend sets `id = goalApiId` on every normalized football match, the existing `m.id`-based navigation/keys/dedupe keep working; navigation passes the goalApiId. FixturesScreen drops the 2-minute polling (load on mount + pull-to-refresh only). LiveScreen filters to live-only (user requirement: the live page shows only live/ongoing matches, even though /football/live now also returns recently-finished matches). HomeScreen drops a DB-debugging artifact. MatchDetailScreen is verified to work with goalApiId. The frontend must typecheck (`npx tsc --noEmit` = exit 0). Depends on FEAT-001's contract (backend returns `id` = `goalApiId` on every football match row).",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Edit android/src/services/api.ts: in the `FootballMatch` interface change `goalApiId?: string | null` to `goalApiId: string` (always present from the proxy). Keep `id: string` (= goalApiId from the backend). Rename the `getMatch` parameter for clarity: `getMatch: (goalApiId: string) => client.get<any>(`/football/matches/${goalApiId}`).then(r => r.data)`. Leave all other football/cricket/health endpoints unchanged.",
     "Edit android/src/screens/FixturesScreen.tsx: delete the `useEffect` that sets a `setInterval(() => { if (selectedDateRef.current === today) loadDate(...) }, 2 * 60_000)` (the 2-minute polling), and delete the `selectedDateRef` `useRef` and the `selectedDateRef.current = date` assignment in `handleDateChange` (they were only used by the polling). Keep the `RefreshControl` (pull-to-refresh) and the `useEffect(() => { loadDate(today); }, [loadDate])` load-on-mount. Keep `fixEarlyLive` in `loadDate` (defensive).",
@@ -23,5 +23,5 @@
     "cd f:\\Score Koto\\android && npx tsc --noEmit  (expect: exit 0)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 5 steps implemented; frontend typechecks (npx tsc --noEmit = exit 0). Contract note for later steps: FootballMatch.goalApiId is now REQUIRED (string) in android/src/services/api.ts and getMatch takes a goalApiId param — the backend (FEAT-001) MUST return goalApiId on every football match row (id === goalApiId). LiveScreen filters live football via cleanLive in both REST load and WebSocket onFootballUpdate (fixEarlyLive import removed there). FixturesScreen now loads on mount + pull-to-refresh only (2-min setInterval polling and selectedDateRef useRef removed; RefreshControl kept; fixEarlyLive kept defensively in loadDate). HomeScreen DEV-only competition-name debug useEffect removed. MatchDetailScreen unchanged logically; only the stale LIVE_REFRESH_MS comment updated (60s live refresh is safe because the backend proxies Goal API directly with no quota limit)."
 }

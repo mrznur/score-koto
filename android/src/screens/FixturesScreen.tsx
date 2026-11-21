@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -83,12 +84,12 @@ export default function FixturesScreen() {
   const [footballMatches, setFootballMatches] = useState<FootballMatch[]>([]);
   const [cricketMatches, setCricketMatches] = useState<CricketMatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => { loadDate(today); }, []);
-
-  const loadDate = async (date: string) => {
+  const loadDate = useCallback(async (date: string, isPull = false) => {
     try {
-      setLoading(true);
+      if (isPull) setRefreshing(true);
+      else setLoading(true);
       const [fb, cr] = await Promise.all([
         footballApi.getByDate(date),
         cricketApi.getByDate(date),
@@ -101,8 +102,11 @@ export default function FixturesScreen() {
       setCricketMatches([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => { loadDate(today); }, [loadDate]);
 
   const handleDateChange = (date: string) => {
     setSelectedDate(date);
@@ -131,6 +135,14 @@ export default function FixturesScreen() {
       style={{ flex: 1, backgroundColor: colors.bg }}
       contentContainerStyle={{ paddingBottom: 112 }}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => loadDate(selectedDate, true)}
+          tintColor={Colors.primary}
+          colors={[Colors.primary]}
+        />
+      }
     >
       <View style={{ paddingHorizontal: 16, paddingTop: insets.top }}>
         <TopBar
@@ -138,7 +150,7 @@ export default function FixturesScreen() {
           title="Fixtures"
           onBack={() => navigation.goBack()}
           action={
-            <TouchableOpacity onPress={() => loadDate(selectedDate)}>
+            <TouchableOpacity onPress={() => loadDate(selectedDate, true)}>
               <Icon name="calendar" size={20} color={colors.text} />
             </TouchableOpacity>
           }

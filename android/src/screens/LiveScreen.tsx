@@ -18,7 +18,7 @@ import TopBar from '../components/layout/TopBar';
 import LiveDot from '../components/ui/LiveDot';
 import { footballApi, cricketApi, FootballMatch, CricketMatch } from '../services/api';
 import { useLiveUpdates } from '../hooks/useLiveUpdates';
-import { dedupeMatches, fixEarlyLive } from '../utils/featured';
+import { dedupeMatches, cleanLive } from '../utils/featured';
 import {
   buildRegionGroups,
   LeagueRow,
@@ -85,7 +85,7 @@ export default function LiveScreen() {
         footballApi.getLive(),
         cricketApi.getLive(),
       ]);
-      setFootball(dedupeMatches(fixEarlyLive(fb)));
+      setFootball(dedupeMatches(cleanLive(fb)));
       setCricket(cr);
       setLastUpdated(new Date());
     } catch (e) {
@@ -103,7 +103,7 @@ export default function LiveScreen() {
   }, [load]);
 
   useLiveUpdates({
-    onFootballUpdate: (matches) => { setFootball(dedupeMatches(fixEarlyLive(matches))); setLastUpdated(new Date()); },
+    onFootballUpdate: (matches) => { setFootball(dedupeMatches(cleanLive(matches))); setLastUpdated(new Date()); },
     onCricketUpdate: (matches) => { setCricket(matches); setLastUpdated(new Date()); },
   });
 
