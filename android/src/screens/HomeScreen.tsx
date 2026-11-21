@@ -55,13 +55,6 @@ export default function HomeScreen() {
   // Home stays mounted behind the tabs, so re-read follows whenever it regains focus
   useFocusEffect(useCallback(() => { reloadFollowing(); }, [reloadFollowing]));
 
-  // DEV ONLY: shows the exact competition/country names the API returns, to debug league matching
-  useEffect(() => {
-    if (!__DEV__ || nearbyFootball.length === 0) return;
-    const names = new Set(nearbyFootball.map(m => `${m.competition} | ${m.country}`));
-    console.log('[HOME] competitions in by-date data:\n' + [...names].sort().join('\n'));
-  }, [nearbyFootball.length]);
-
   const loadData = useCallback(async (mode: 'initial' | 'pull') => {
     if (mode === 'initial') {
       setLoading(true);

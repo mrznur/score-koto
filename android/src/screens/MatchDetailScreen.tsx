@@ -24,8 +24,8 @@ import { footballApi, FootballMatch } from '../services/api';
 const TABS = ['OVERVIEW', 'STATS', 'LINEUP', 'COMMENTARY'];
 
 // How often to silently refresh a LIVE match while this screen is open.
-// Set to 0 to disable. Keep it at 0 until the backend caches match details,
-// because every refresh currently makes 4 requests to the sports provider.
+// Set to 0 to disable. The backend now proxies Goal API directly with no
+// quota limit, so the 60s live refresh is safe.
 const LIVE_REFRESH_MS = 60_000;
 
 type MatchDetail = {

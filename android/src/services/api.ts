@@ -32,7 +32,7 @@ export interface FootballMatch {
   venue: string | null;
   kickoff: string;
   lastSyncedAt: string;
-  goalApiId?: string | null;
+  goalApiId: string;
 }
 
 export interface CricketMatch {
@@ -56,7 +56,7 @@ export const footballApi = {
   getLive: () => client.get<FootballMatch[]>('/football/live').then(r => r.data),
   getFixtures: () => client.get<FootballMatch[]>('/football/fixtures').then(r => r.data),
   getResults: () => client.get<FootballMatch[]>('/football/results').then(r => r.data),
-  getMatch: (id: string) => client.get<any>(`/football/matches/${id}`).then(r => r.data),
+  getMatch: (goalApiId: string) => client.get<any>(`/football/matches/${goalApiId}`).then(r => r.data),
   getByDate: (date: string) => client.get<FootballMatch[]>(`/football/by-date/${date}`).then(r => r.data),
   getStandings: (leagueId: string) => client.get<any[]>(`/football/standings/${leagueId}`).then(r => r.data),
   getTopLeagues: () => client.get<any[]>('/football/leagues/top').then(r => r.data),

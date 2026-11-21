@@ -21,13 +21,13 @@ An Android emulator or physical device is needed to run the app. Expo CLI handle
 cd backend
 cp ../.env.example .env
 # Fill in API keys:
-#   GOAL_API_KEY            — Goal API key
-#   FOOTBALL_API_KEY        — API-Football key (100 req/day free)
-#   FOOTBALL_DATA_KEY       — football-data.org key
+#   GOAL_API_KEY            — Goal API key (sole football provider)
 #   CRICKET_API_KEY         — CricketData primary key (100 req/day)
 #   CRICKET_API_KEY_2       — CricketData secondary key (optional)
 #   DATABASE_URL            — set automatically if you use docker-compose defaults
 ```
+
+`FOOTBALL_API_KEY` (API-Football) and `FOOTBALL_DATA_KEY` (football-data.org) are kept in `.env`/`.env.example` for reference but are **no longer used** — those secondary football providers were removed and football is now a Goal API pass-through proxy.
 
 ### 2. Start the database
 ```bash
@@ -40,7 +40,7 @@ docker compose up -d
 ```bash
 cd backend
 npm install
-npx prisma migrate dev        # applies all 5 migrations
+npx prisma db push            # creates/syncs the schema from schema.prisma
 npm run dev
 # API:    http://localhost:3000/api/v1
 # Swagger: http://localhost:3000/api/docs
@@ -73,16 +73,16 @@ pnpm dev                      # http://localhost:8443
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GOAL_API_KEY` | Yes | Goal API bearer token |
-| `FOOTBALL_API_KEY` | Yes | API-Football key |
-| `FOOTBALL_DATA_KEY` | Yes | football-data.org token |
-| `CRICKET_API_KEY` | Yes | CricketData primary key |
+| `GOAL_API_KEY` | Yes | Goal API bearer token (sole football provider) |
+| `CRICKET_API_KEY` | Yes | CricketData primary key (100 req/day) |
 | `CRICKET_API_KEY_2` | No | CricketData secondary key (doubles cricket quota) |
+| `FOOTBALL_API_KEY` | No | Retained in `.env` but unused (API-Football provider removed) |
+| `FOOTBALL_DATA_KEY` | No | Retained in `.env` but unused (football-data.org provider removed) |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `REDIS_URL` | No | Redis URL (in docker-compose but not actively used) |
 | `PORT` | No | Backend port (default: 3000) |
 
-Never commit `backend/.env`.
+Only `GOAL_API_KEY` and `CRICKET_API_KEY` are needed for football and cricket respectively. Never commit `backend/.env`.
 
 ---
 
@@ -90,21 +90,11 @@ Never commit `backend/.env`.
 
 ### Trigger a manual sync
 ```bash
-# Live football
-curl -X POST http://localhost:3000/api/v1/football/sync/live
-
-# Today's fixtures
-curl -X POST http://localhost:3000/api/v1/football/sync/today
-
-# Specific date
-curl -X POST http://localhost:3000/api/v1/football/sync/date/2025-01-25
-
-# Upcoming 7 days
-curl -X POST http://localhost:3000/api/v1/football/sync/upcoming
-
 # Cricket
 curl -X POST http://localhost:3000/api/v1/cricket/sync
 ```
+
+Football has **no manual sync endpoints**. Football is a Goal API pass-through proxy, so every `GET /football/...` reads Goal API directly and returns fresh data — there is nothing to "sync". The `POST /football/sync/*` routes have been removed.
 
 ### Check provider quota
 ```bash
@@ -122,10 +112,10 @@ cd backend
 npx prisma studio               # opens at http://localhost:5555
 ```
 
-### Reset and re-migrate the database
+### Reset and re-apply the schema
 ```bash
 cd backend
-npx prisma migrate reset        # drops and recreates all tables
+npx prisma db push --accept-data-loss   # recreates tables from schema.prisma
 ```
 
 ---
@@ -133,10 +123,10 @@ npx prisma migrate reset        # drops and recreates all tables
 ## Project state
 
 - [x] Backend: NestJS + Prisma + PostgreSQL running
-- [x] Football: 4 providers integrated (Goal API, API-Football, football-data.org, TheSportsDB)
-- [x] Cricket: CricketData integrated (dual-key support)
-- [x] Scheduled sync (5 cron jobs)
-- [x] WebSocket live push
+- [x] Football: Goal API pass-through proxy (no football DB storage; every read hits Goal API directly)
+- [x] Cricket: CricketData integrated (dual-key support), synced to DB
+- [x] Scheduled sync (2 cron jobs: football live-push + cricket)
+- [x] WebSocket live push (football:live, cricket:live)
 - [x] Android app: React Native + Expo, all screens connected to real API
 - [x] Match detail: events, stats, lineups, commentary from Goal API
 - [x] Standings: via Goal API

@@ -7,40 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ── Football ──────────────────────────────────────────────────────────────────
-
-model FootballMatch {
-  id             String   @id @default(uuid())
-  providerId     String   @unique
-  goalApiId      String?  // Goal API fixture ID for events/lineups/stats/commentary // API-Football fixture id
-  homeTeam       String
-  awayTeam       String
-  homeTeamId     String
-  awayTeamId     String
-  homeTeamLogo   String?
-  awayTeamLogo   String?
-  competitionLogo String?
-  homeScore      Int?
-  awayScore      Int?
-  status         String   // NS, 1H, HT, 2H, FT, AET, PEN, PST, CANC
-  elapsed        Int?     // minutes played
-  competition    String
-  competitionId  String
-  country        String?
-  countryFlag    String?
-  season         Int
-  round          String?
-  venue          String?
-  kickoff        DateTime
-  lastSyncedAt   DateTime @default(now())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@index([status])
-  @@index([kickoff])
-  @@index([competitionId])
-}
-
 // ── Cricket ───────────────────────────────────────────────────────────────────
 
 model CricketMatch {
